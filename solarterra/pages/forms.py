@@ -5,13 +5,15 @@ from django import forms
 from pages.widgets import DateTimeWidget, DateTimePicker, CheckboxTableGroups
 import datetime as dt
 from django.db.models import Q
+from django.db.utils import OperationalError, ProgrammingError
 
 
 class SourceForm(forms.Form):
 
+    # ВАЖНО: не выполняем DB-запросы на уровне модуля — choices задаём в __init__
     sources = forms.MultipleChoiceField(
         label="Загруженные наборы данных",
-        choices=Dataset.objects.form_choices(),
+        choices=(),  # будет заполнено при инициализации формы
         widget=forms.CheckboxSelectMultiple(),
         required=True,
     )
@@ -28,14 +30,22 @@ class SourceForm(forms.Form):
         widget=DateTimeWidget(attrs={'id': "dtw_end"})
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ленивая подстановка choices: форма может импортироваться до миграций/старта БД
+        try:
+            self.fields['sources'].choices = Dataset.objects.form_choices()
+        except (OperationalError, ProgrammingError):
+            # БД недоступна или таблицы не созданы — оставляем пустым, чтобы не падать при импортe
+            self.fields['sources'].choices = []
 
-def clean(self):
-    cleaned_data = super().clean()
-    ts_start = cleaned_data.get("ts_start")
-    ts_end = cleaned_data.get("ts_end")
+    def clean(self):
+        cleaned_data = super().clean()
+        ts_start = cleaned_data.get("ts_start")
+        ts_end = cleaned_data.get("ts_end")
 
-    if ts_start >= ts_end:
-        raise ValidationError("Start time should be before end time.")
+        if ts_start and ts_end and ts_start >= ts_end:
+            raise ValidationError("Start time should be before end time.")
 
 
 class VariablesForm(forms.Form):
