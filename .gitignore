@@ -12,3 +12,6 @@ solar_venv/
 # Collected static and logs from submodules
 solarterra_submodules/static/
 solarterra_submodules/logs/
+
+# Secrets
+configs/settings_sensitive.json
