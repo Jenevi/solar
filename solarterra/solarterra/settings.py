@@ -165,3 +165,71 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 PROJECT_VERSION = 'v1.1'
+
+# Логирование SQL-запросов Django (django.db.backends)
+# ----------------------------------------------------
+# Этот раздел включает подробные логи SQL-запросов — полезно для диагностики
+# медленных страниц и избыточных запросов (N+1). По умолчанию вывод идет
+# только в режиме DEBUG.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # не отключаем стандартные логгеры Django
+    # Форматы сообщений: можно быстро переключить на 'verbose'
+    'formatters': {
+        'simple': {
+            # %(name)s — имя логгера (здесь 'django.db.backends'),
+            # %(levelname)s — уровень, %(message)s — сам текст (SQL + время)
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+        },
+        'verbose': {
+            # Добавляет PID/поток — удобно при многопроцессной работе gunicorn/uwsgi
+            'format': '%(asctime)s [%(levelname)s] [pid:%(process)d] [thr:%(threadName)s] %(name)s: %(message)s',
+        },
+    },
+    'filters': {
+        # Логировать только когда DEBUG = True.
+        # Чтобы включить в продакшене — уберите этот фильтр у нужных handlers.
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        # Вывод в консоль (runserver или stdout контейнера)
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'filters': ['require_debug_true'],
+        },
+        # Ротационный файл (см. переменную LOG_FILE выше)
+        # Меняет файл по достижении размера, хранит несколько резервных копий.
+        'db_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_FILE,
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 3,
+            'formatter': 'simple',
+            'filters': ['require_debug_true'],
+            # Примечание: убедитесь, что каталог для LOG_FILE существует и доступен на запись.
+        },
+    },
+    'loggers': {
+        # Основной логгер SQL-запросов ORM. Уровень DEBUG печатает
+        # сам запрос, параметры и длительность выполнения.
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'db_file'],
+            'propagate': False,  # не пускать дальше во "внешние" логгеры, чтобы не дублировать
+        },
+        # При необходимости можно отдельно включать:
+        # 'django.db.backends.schema': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
+        # 'django.db.backends.transaction': {'level': 'DEBUG', 'handlers': ['console'], 'propagate': False},
+    },
+}
+
+# Подсказки по использованию:
+# - В проде обычно оставляют DEBUG=False и не включают этот логгер
+#   (или подключают временно для диагностики, убрав фильтр require_debug_true).
+# - Можно точечно форсировать вывод SQL даже при DEBUG=False:
+#     from django.db import connection
+#     connection.force_debug_cursor = True
+#   Делайте это только локально/временно, иначе возможна деградация производительности.
