@@ -304,7 +304,16 @@ class Variable(models.Model):
             return self.var_notes
 
     def get_axis_label(self):
-        return f'{self.lablaxis}, {self.units}'
+        from solarterra.utils import format_units
+        pretty = format_units(self.units) if self.units else None
+        if self.lablaxis and pretty:
+            return f"{self.lablaxis}, {pretty}"
+        elif self.lablaxis:
+            return self.lablaxis
+        elif pretty:
+            return pretty
+        else:
+            return self.name
 
         # units = self.get_attribute_value('units')
         # if units:
