@@ -55,12 +55,21 @@ def format_units(units: str) -> str:
     Rules:
     - Treat the first token as numerator unless it is dimensionless ('no', '1', '#', 'count').
     - Each subsequent token is a denominator term; identical terms are combined with negative exponents.
+    - Strings that mean "no units" (e.g., 'None', 'NA', '1') are treated as dimensionless and return ''.
     - If no slashes are present, return the original units.
     """
     if not units:
-        return units
+        return ""
 
     s = str(units).strip()
+    if not s:
+        return ""
+
+    s_lower = s.lower()
+    # Consider common representations of dimensionless values as "no units"
+    if s_lower in {"none", "na", "n/a", "null", "1", "unitless", "dimensionless", "no unit", "no units", "-"}:
+        return ""
+
     if '/' not in s:
         return s
 
