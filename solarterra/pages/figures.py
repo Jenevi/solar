@@ -57,9 +57,9 @@ def scatter(q_params, p_params, data):
     #     print(field)
 
     fig.add_trace(go.Scatter(
-        x=data['dt_timestamp'], y=data[field], connectgaps=False, mode="lines+markers"))
+        x=data['dt_timestamp'], y=data[field], connectgaps=True, mode="lines+markers"))
 
-    fig.update_traces(connectgaps=False, marker=dict(size=4))
+    fig.update_traces(connectgaps=True, marker=dict(size=4))
     ts = p_params['ts_limits_dt']
     fig.update_layout(
         xaxis_range=[ts[0], ts[1]],
@@ -99,7 +99,7 @@ def n_trace(q_params, p_params, data):
         fig.add_trace(go.Scatter(
             x=data['dt_timestamp'],
             y=data[field],
-            connectgaps=False,
+            connectgaps=True,
             mode="lines+markers",
         ),
             row=index + 1,
