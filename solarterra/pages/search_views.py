@@ -84,7 +84,7 @@ def plot(request):
         ts_tuple = (tsi(ts_start_dt), tsi(ts_end_dt))
         variables_form = VariablesForm(
             render_flag=False,
-            dataset_instances=Dataset.objects.all(),
+            dataset_instances=Dataset.objects.all().order_by('tag'),
             ts_tuple=ts_tuple,
             data=request.POST
         )

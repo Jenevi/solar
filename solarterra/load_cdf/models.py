@@ -92,7 +92,7 @@ class CDFFileStored(models.Model):
 class DatasetManager(GetManager):
 
     def form_choices(self):
-        return [(dts.id, dts.get_description()) for dts in self.all()]
+        return [(dts.id, dts.get_description()) for dts in self.all().order_by('tag')]
 
 
 class Dataset(models.Model):
@@ -304,13 +304,14 @@ class Variable(models.Model):
             return self.var_notes
 
     def get_axis_label(self):
-        return f'{self.lablaxis}, {self.units}'
-
-        # units = self.get_attribute_value('units')
-        # if units:
-        #     return f"{self.name}, {units}"
-        # else:
-        #     return self.name
+        
+        units = self.units
+        # units are stored as a str in db... but sometimes it's a space symbol and not an empty string
+        if units and units != 'None' and units != '' and units != None and units != ' ':
+            print('HERE ARE UNITS!!!', units, self.units, type(units))
+            return f'{self.lablaxis}, {self.units}'
+        else:
+            return self.lablaxis
 
     def get_attribute_value(self, attribute_title, get_type=False):
         attr = self.attributes.filter(title__iexact=attribute_title).first()

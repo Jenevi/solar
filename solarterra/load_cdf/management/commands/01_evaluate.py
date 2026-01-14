@@ -219,13 +219,14 @@ class Command(BaseCommand):
 
             # Mapping from JSON keys to Dataset model fields (TEXT_DESCRIPTION is missing as it requires special handling)
             # tbh maybe a list and lowercase would be better
+            # ващет должно грузится из самого мэтча, а то придется руками менять код
             dataset_fields = [
                 'MISSION', 'SOURCE_NAME', 'DATA_TYPE',
                 'INSTRUMENT', 'DATASET_VERSION', 'LOGICAL_SOURCE',
                 'LOGICAL_DESCRIPTION', 'PI_NAME', 'PI_AFFILIATION'
             ]
 
-            # Automatically populate dataset fields from JSON
+            # Automatically populate dataset standartized fields from JSON
             for field in dataset_fields:
                 if field in global_attrs:
                     value = global_attrs[field]['value']
