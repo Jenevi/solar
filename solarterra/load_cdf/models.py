@@ -92,7 +92,7 @@ class CDFFileStored(models.Model):
 class DatasetManager(GetManager):
 
     def form_choices(self):
-        return [(dts.id, dts.get_description()) for dts in self.all()]
+        return [(dts.id, dts.get_description()) for dts in self.all().order_by('tag')]
 
 
 class Dataset(models.Model):

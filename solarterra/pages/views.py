@@ -34,7 +34,8 @@ def system_data(request):
 def data_info(request):
     template = "pages/data_official.html"
     context = {
-        'models': DynamicModel.objects.all()
+        'models': DynamicModel.objects.all().order_by(
+        'dataset_instance__tag')
     }
     """
     dynamic_models = DynamicModel.objects.order_by(
